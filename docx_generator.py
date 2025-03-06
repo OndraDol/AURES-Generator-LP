@@ -1,5 +1,19 @@
 from docxtpl import DocxTemplate
 import datetime
+import os
+import sys
+
+def resource_path(relative_path):
+    """
+    Vrátí absolutní cestu k resource souboru.
+    Pokud je aplikace zabalená PyInstallerem, použije se sys._MEIPASS.
+    Jinak se vezme aktuální adresář.
+    """
+    try:
+        base_path = sys._MEIPASS  # Když je zabalené PyInstallerem
+    except Exception:
+        base_path = os.path.abspath(".")  # Normální běh
+    return os.path.join(base_path, relative_path)
 
 def generate_docx(
     jmeno, narozeni, adresa, psc,
@@ -9,13 +23,12 @@ def generate_docx(
     output_file="vysledny_posudek.docx"
 ):
     """
-    Vezme data z textových polí (jmeno, narozeni, adresa, psc), roletky (pozice, pobocka, konzultant),
-    hodnoty pozice_popis a popis_pozice, a slovník faktor_values (faktor1..6, kategorie1..6)
-    a doplní do LP_template.docx pomocí placeholderů.
+    Vezme data z textových polí a doplní je do LP_template.docx pomocí placeholderů.
+    Šablona LP_template.docx je ve stejné složce jako EXE (po zabalení).
     """
+    template_path = resource_path("LP_template.docx")  # <- Bez '_internal'
 
-    doc = DocxTemplate("LP_template.docx")
-
+    doc = DocxTemplate(template_path)
     datum_dnes = datetime.date.today().strftime("%d.%m.%Y")
 
     context = {

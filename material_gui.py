@@ -18,7 +18,7 @@ from qt_material import apply_stylesheet
 # Vlastní moduly
 from pdf_extractor import extract_form_fields, parse_personal_data
 from docx_generator import generate_docx
-from pdf_generator import generate_pdf
+from pdf_generator_comtypes import generate_pdf_with_comtypes
 
 # Nastavíme locale (pokud to jde)
 try:
@@ -209,14 +209,14 @@ class MainWindow(QMainWindow):
                 border-radius: 8px;
                 font-size: 14px;
                 padding: 12px 24px;
-                border: 1px solid transparent; /* Default bez barevného rámečku */
+                border: 1px solid transparent;
             }
             QPushButton:hover {
                 background-color: #F44336;
             }
             QPushButton:focus {
                 outline: none;
-                border: 1px solid #ffffff; /* bílý rámeček při focusu */
+                border: 1px solid #ffffff;
             }
         """)
         self.load_pdf_btn.setFixedHeight(50)
@@ -257,7 +257,6 @@ class MainWindow(QMainWindow):
         self.faktor_combos = []
         self.kategorie_combos = []
 
-        # Naplníme roletky z nového FACTOR_OPTIONS
         for i in range(6):
             faktor_combo = QComboBox()
             faktor_combo.addItem("")
@@ -272,7 +271,6 @@ class MainWindow(QMainWindow):
             self.faktor_combos.append(faktor_combo)
             self.kategorie_combos.append(kategorie_combo)
 
-        # Výchozí: 1. roletka = "Vyšetření v základním rozsahu", "Kat. 1"
         self.faktor_combos[0].setCurrentText("Vyšetření v základním rozsahu")
         self.kategorie_combos[0].setCurrentText("Kat. 1")
 
@@ -350,14 +348,14 @@ class MainWindow(QMainWindow):
                 font-size: 14px; 
                 padding: 12px; 
                 border-radius: 8px;
-                border: 1px solid transparent; /* Default bez barevného rámečku */
+                border: 1px solid transparent;
             }
             QPushButton:hover {
                 background-color: #1A73E8;
             }
             QPushButton:focus {
                 outline: none;
-                border: 1px solid #ffffff; /* bílý rámeček při focusu */
+                border: 1px solid #ffffff;
             }
         """)
         self.gen_docx_btn.clicked.connect(self.on_generate_docx)
@@ -372,14 +370,14 @@ class MainWindow(QMainWindow):
                 font-size: 14px; 
                 padding: 12px; 
                 border-radius: 8px;
-                border: 1px solid transparent; /* Default bez barevného rámečku */
+                border: 1px solid transparent;
             }
             QPushButton:hover {
                 background-color: #F44336;
             }
             QPushButton:focus {
                 outline: none;
-                border: 1px solid #ffffff; /* bílý rámeček při focusu */
+                border: 1px solid #ffffff;
             }
         """)
         self.gen_pdf_btn.clicked.connect(self.on_generate_pdf)
@@ -427,26 +425,22 @@ class MainWindow(QMainWindow):
                 border-radius: 5px;
                 min-height: 28px;
             }
-            /* Tohle ovlivní samotný seznam v ComboBoxu */
             QComboBox QAbstractItemView {
                 background-color: #3C3F41; 
                 color: #ffffff;  
                 border: 1px solid #555;
             }
-            /* Styl pro jednotlivé položky */
             QComboBox QAbstractItemView::item {
                 background-color: #3C3F41;
                 color: #ffffff;
             }
-            /* Hover položky */
             QComboBox QAbstractItemView::item:hover {
                 background-color: #666666;
                 color: #ffffff;
             }
-            /* Vybraná položka */
             QComboBox QAbstractItemView::item:selected {
-                background-color: #dddddd; /* světlé pozadí */
-                color: #000000;            /* černý text */
+                background-color: #dddddd;
+                color: #000000;
             }
             QCheckBox {
                 background: none;
@@ -567,7 +561,8 @@ class MainWindow(QMainWindow):
             faktor_values=self.collect_factors(),
             output_file=temp_docx
         )
-        generate_pdf(docx_file=temp_docx, pdf_file=pdf_path)
+        # Použijeme PDF generaci přes COM
+        generate_pdf_with_comtypes(docx_file=temp_docx, pdf_file=pdf_path)
         if os.path.exists(temp_docx):
             os.remove(temp_docx)
 
@@ -576,7 +571,6 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    # Aplikujeme styl (qt-material: dark_teal.xml)
     apply_stylesheet(app, theme='dark_teal.xml', extra={'density_scale': '-1'})
 
     window = MainWindow()
